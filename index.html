@@ -128,7 +128,7 @@ input[type=text]{width:100%; padding:12px; font-size:1rem; border-radius:10px; b
     <div class="homecard">
       <h2>Cómo estudiar de forma eficiente</h2>
       <ul class="steps">
-        <li><span class="stepnum">1</span><span class="steptext">Empieza por <b>Palabras</b> en modo <b>Tarjetas</b>: escucha el audio 🔊, fíjate en el símbolo fonético (IPA) y luego revela la palabra escrita.</span></li>
+        <li><span class="stepnum">1</span><span class="steptext">Empieza por <b>Palabras</b> en modo <b>Tarjetas</b>: escucha el audio 🔊, observa los símbolos fonéticos (IPA) y luego revela la palabra escrita.</span></li>
         <li><span class="stepnum">2</span><span class="steptext">Usa la velocidad <b>🐢 Lento</b> en los sonidos que se te dificulten, y repite varias veces antes de pasar a velocidad Normal.</span></li>
         <li><span class="stepnum alt">3</span><span class="steptext">Cuando te sientas seguro, cambia a modo <b>Quiz</b>: escuchas la palabra y la escribes tú. Repite hasta lograr el 100% de aciertos.</span></li>
         <li><span class="stepnum alt">4</span><span class="steptext">Solo después de dominar las 30 palabras, pasa a la pestaña <b>Oraciones</b> y repite el mismo proceso (Tarjetas → Quiz).</span></li>
@@ -320,6 +320,12 @@ function saveProgress(){
 
 function currentList(){ return DATA[state.set]; }
 
+// Evita que el navegador corte la línea justo antes de un símbolo de acento
+// (ˈ primario o ˌ secundario), lo que partía palabras IPA en dos líneas.
+function fixIpaWrap(str){
+  return str.replace(/([ˈˌ])/g, "\u2060$1");
+}
+
 function newOrder(){
   state.order = shuffle(currentList().map((_,i)=>i));
   state.pos = 0;
@@ -330,7 +336,7 @@ function render(){
   const idx = state.order[state.pos];
   const [answer, ipa] = list[idx];
 
-  document.getElementById("ipa").textContent = ipa;
+  document.getElementById("ipa").textContent = fixIpaWrap(ipa);
   document.getElementById("posLabel").textContent = state.pos+1;
   document.getElementById("totalLabel").textContent = list.length;
   document.getElementById("scoreLabel").textContent = state.score;
