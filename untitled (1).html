@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Práctica de Fonética</title>
+<style>
+:root{
+  --bg:#f4f6fa; --card:#ffffff; --text:#1a2233; --muted:#6b7480;
+  --accent:#1f6fb2; --accent2:#e8935a; --good:#2e9e5b; --bad:#d64545;
+  --border:#e1e5ec;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#12151c; --card:#1c212c; --text:#eef1f6; --muted:#9aa3b2;
+    --accent:#4d9fe0; --accent2:#f0a877; --good:#4cc985; --bad:#ef6b6b; --border:#2a303c;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12151c; --card:#1c212c; --text:#eef1f6; --muted:#9aa3b2;
+  --accent:#4d9fe0; --accent2:#f0a877; --good:#4cc985; --bad:#ef6b6b; --border:#2a303c;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px); height:100%;}
+body{
+  height:100%; margin:0; background:var(--bg); color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+}
+.wrap{max-width:640px; margin:0 auto; padding:18px 16px 40px;}
+h1{font-size:1.3rem; margin:4px 0 2px; text-align:center;}
+.sub{color:var(--muted); text-align:center; font-size:.85rem; margin-bottom:16px;}
+
+/* ---------- Home screen ---------- */
+#homeScreen{display:flex; flex-direction:column; min-height:80vh; justify-content:center;}
+.homecard{background:var(--card); border:1px solid var(--border); border-radius:16px; padding:24px 20px;}
+.homecard h2{font-size:1.05rem; margin:0 0 12px; text-align:center;}
+.steps{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:14px;}
+.steps li{display:flex; gap:12px; align-items:flex-start; font-size:.9rem; line-height:1.45;}
+.stepnum{flex:0 0 28px; height:28px; border-radius:50%; background:var(--accent); color:#fff;
+  display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.85rem;}
+.stepnum.alt{background:var(--accent2);}
+.starttip{margin-top:18px; padding:12px; border-radius:10px; background:var(--bg); border:1px solid var(--border);
+  font-size:.82rem; color:var(--muted); text-align:center; line-height:1.4;}
+.startbtn{display:block; width:100%; margin-top:20px; padding:14px; border-radius:12px; border:none;
+  background:var(--accent); color:#fff; font-size:1rem; font-weight:700; cursor:pointer;}
+
+/* ---------- Study screen ---------- */
+#studyScreen{display:none;}
+.topbar{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;}
+.backbtn{background:none; border:none; color:var(--accent); font-size:.85rem; font-weight:600; cursor:pointer; padding:6px 0;}
+
+.tabs{display:flex; gap:8px; margin-bottom:14px;}
+.tab{flex:1; padding:10px; text-align:center; border-radius:10px; background:var(--card);
+  border:1px solid var(--border); font-weight:600; font-size:.9rem; cursor:pointer; color:var(--muted);}
+.tab.active{background:var(--accent); color:#fff; border-color:var(--accent);}
+
+.modebar{display:flex; gap:8px; margin-bottom:16px;}
+.mode{flex:1; padding:8px; text-align:center; border-radius:8px; background:transparent;
+  border:1px solid var(--border); font-size:.82rem; cursor:pointer; color:var(--text);}
+.mode.active{background:var(--accent2); color:#fff; border-color:var(--accent2);}
+
+.card{background:var(--card); border:1px solid var(--border); border-radius:16px; padding:26px 20px;
+  text-align:center; min-height:150px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; position:relative;}
+.ipa{font-size:1.6rem; letter-spacing:.5px; word-break:break-word;}
+.answer{font-size:1.25rem; font-weight:700; color:var(--accent); min-height:1.6rem;}
+.hint{color:var(--muted); font-size:.8rem;}
+
+.speakerbtn{
+  width:56px; height:56px; border-radius:50%; border:none; background:var(--accent); color:#fff;
+  font-size:1.5rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  box-shadow:0 3px 10px rgba(0,0,0,.15); transition:transform .12s;
+}
+.speakerbtn:active{transform:scale(.92);}
+.speakerbtn.speaking{animation:pulse 0.8s infinite;}
+.speakerbtn[disabled]{opacity:.35; cursor:not-allowed;}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(31,111,178,.5);} 70%{box-shadow:0 0 0 12px rgba(31,111,178,0);} 100%{box-shadow:0 0 0 0 rgba(31,111,178,0);}}
+
+.audiorow{display:flex; align-items:center; justify-content:space-between; gap:10px; margin:12px 0 4px; flex-wrap:wrap;}
+.autoplay{font-size:.78rem; color:var(--muted); display:flex; align-items:center; gap:6px;}
+.speedtoggle{display:flex; gap:6px;}
+.speedbtn{padding:6px 10px; font-size:.75rem; border-radius:8px; border:1px solid var(--border);
+  background:var(--card); color:var(--text); cursor:pointer;}
+.speedbtn.active{background:var(--accent2); color:#fff; border-color:var(--accent2);}
+.audioerr{color:var(--bad); font-size:.75rem; text-align:center; margin-top:8px; display:none;}
+
+.btnrow{display:flex; gap:10px; margin-top:16px;}
+button.big{flex:1; padding:12px; border-radius:10px; border:none; font-size:.95rem; font-weight:600; cursor:pointer;}
+.btn-primary{background:var(--accent); color:#fff;}
+.btn-secondary{background:var(--card); color:var(--text); border:1px solid var(--border) !important;}
+
+.quizbox{margin-top:14px;}
+input[type=text]{width:100%; padding:12px; font-size:1rem; border-radius:10px; border:1px solid var(--border);
+  background:var(--bg); color:var(--text); box-sizing:border-box;}
+.feedback{margin-top:10px; font-weight:600; text-align:center; min-height:1.3rem;}
+.feedback.good{color:var(--good);}
+.feedback.bad{color:var(--bad);}
+
+.stats{display:flex; justify-content:space-between; margin-top:18px; font-size:.85rem; color:var(--muted);}
+.stats b{color:var(--text);}
+
+.progressbar{height:6px; background:var(--border); border-radius:3px; overflow:hidden; margin-bottom:16px;}
+.progressfill{height:100%; background:var(--accent); width:0%; transition:width .3s;}
+
+.resetlink{display:block; text-align:center; margin-top:18px; color:var(--muted); font-size:.78rem; text-decoration:underline; cursor:pointer;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ HOME / INSTRUCTIONS SCREEN ============ -->
+  <div id="homeScreen">
+    <h1>🎧 Práctica de Fonética</h1>
+    <div class="sub">Estrategia Nacional de Educación · IPA americano (Oxford Dictionary)</div>
+
+    <div class="homecard">
+      <h2>Cómo estudiar de forma eficiente</h2>
+      <ul class="steps">
+        <li><span class="stepnum">1</span> Empieza por <b>Palabras</b> en modo <b>Tarjetas</b>: escucha el audio 🔊, fíjate en el símbolo fonético (IPA) y luego revela la palabra escrita.</li>
+        <li><span class="stepnum">2</span> Usa la velocidad <b>🐢 Lento</b> en los sonidos que se te dificulten, y repite varias veces antes de pasar a velocidad Normal.</li>
+        <li><span class="stepnum alt">3</span> Cuando te sientas seguro, cambia a modo <b>Quiz</b>: escuchas la palabra y la escribes tú. Repite hasta lograr el 100% de aciertos.</li>
+        <li><span class="stepnum alt">4</span> Solo después de dominar las 30 palabras, pasa a la pestaña <b>Oraciones</b> y repite el mismo proceso (Tarjetas → Quiz).</li>
+        <li><span class="stepnum">5</span> Practica en sesiones cortas y frecuentes (10–15 min) en vez de una sola sesión larga — se fija mejor en la memoria.</li>
+      </ul>
+      <div class="starttip">💡 Consejo: primero domina todas las palabras sueltas; las oraciones combinan esos mismos sonidos en contexto, así que serán más fáciles si ya reconoces cada palabra por separado.</div>
+      <button class="startbtn" id="startBtn">Comenzar práctica ➜</button>
+    </div>
+  </div>
+
+  <!-- ============ STUDY SCREEN ============ -->
+  <div id="studyScreen">
+    <div class="topbar">
+      <button class="backbtn" id="backBtn">← Inicio</button>
+    </div>
+    <h1>🎧 Práctica de Fonética</h1>
+    <div class="sub">Estrategia Nacional de Educación · IPA americano (Oxford Dictionary)</div>
+
+    <div class="tabs">
+      <div class="tab active" data-set="words">Palabras (30)</div>
+      <div class="tab" data-set="sentences">Oraciones (15)</div>
+    </div>
+
+    <div class="modebar">
+      <div class="mode active" data-mode="flash">🔁 Tarjetas</div>
+      <div class="mode" data-mode="quiz">✍️ Quiz (escribir)</div>
+    </div>
+
+    <div class="progressbar"><div class="progressfill" id="progressfill"></div></div>
+
+    <div class="card">
+      <button id="playBtn" class="speakerbtn" aria-label="Escuchar pronunciación">🔊</button>
+      <div class="ipa" id="ipa">/.../</div>
+      <div class="answer" id="answer"></div>
+      <div class="hint" id="hint">Toca "Revelar" para ver la respuesta</div>
+    </div>
+
+    <div class="audiorow">
+      <label class="autoplay"><input type="checkbox" id="autoplayChk" checked> Reproducir automáticamente</label>
+      <div class="speedtoggle">
+        <button class="speedbtn active" id="speedNormal" type="button">Normal</button>
+        <button class="speedbtn" id="speedSlow" type="button">🐢 Lento</button>
+      </div>
+    </div>
+    <div class="audioerr" id="audioerr">❌ Tu navegador no soporta audio por voz. Prueba abrir esta página en Chrome o Safari.</div>
+
+    <div id="flashControls" class="btnrow">
+      <button class="big btn-secondary" id="revealBtn">👁️ Revelar</button>
+      <button class="big btn-primary" id="nextBtn">Siguiente ➜</button>
+    </div>
+
+    <div id="quizControls" class="quizbox" style="display:none;">
+      <input type="text" id="quizInput" placeholder="Escribe lo que escuchas / ves..." autocomplete="off" autocapitalize="off" spellcheck="false">
+      <div class="btnrow">
+        <button class="big btn-primary" id="checkBtn">Comprobar</button>
+        <button class="big btn-secondary" id="skipBtn">Saltar ➜</button>
+      </div>
+      <div class="feedback" id="feedback"></div>
+    </div>
+
+    <div class="stats">
+      <span>Ítem <b id="posLabel">1</b> / <b id="totalLabel">30</b></span>
+      <span>Aciertos: <b id="scoreLabel">0</b> / <b id="attemptsLabel">0</b></span>
+    </div>
+
+    <div class="resetlink" id="resetLink">Reiniciar progreso y puntaje</div>
+  </div>
+
+</div>
+
+<script>
+const DATA = {
+  words: [
+    ["Education","/ˌedʒuˈkeɪʃn/"],["values","/ˈvæljuz/"],["Creativity","/ˌkriːeɪˈtɪvəti/"],
+    ["Art","/ɑːrt/"],["Culture","/ˈkʌltʃər/"],["History","/ˈhɪstri/"],["Identity","/aɪˈdentəti/"],
+    ["Environment","/ɪnˈvaɪrənmənt/"],["Nature","/ˈneɪtʃər/"],["Climate","/ˈklaɪmət/"],
+    ["Change","/tʃeɪndʒ/"],["Physical","/ˈfɪzɪkl/"],["Sports","/spɔːrts/"],["Inclusion","/ɪnˈkluːʒn/"],
+    ["Equity","/ˈekwəti/"],["Science","/ˈsaɪəns/"],["Research","/ˈriːsɜːrtʃ/"],["Innovation","/ˌɪnəˈveɪʃn/"],
+    ["Coverage","/ˈkʌvərɪdʒ/"],["Quality","/ˈkwɑːləti/"],["Teacher","/ˈtiːtʃər/"],["Training","/ˈtreɪnɪŋ/"],
+    ["Institution","/ˌɪnstɪˈtuːʃn/"],["Strengthen","/ˈstreŋkθn/"],["Infrastructure","/ˈɪnfrəstrʌktʃər/"],
+    ["Equipment","/ɪˈkwɪpmənt/"],["Learning","/ˈlɜːrnɪŋ/"],["School","/skuːl/"],["Student","/ˈstuːdnt/"],
+    ["Curriculum","/kəˈrɪkjələm/"]
+  ],
+  sentences: [
+    ["We must protect the environment.","/wiː mʌst prəˈtekt ði ɪnˈvaɪrənmənt/"],
+    ["Values guide our daily actions.","/ˈvæljuz ɡaɪd ˈaʊər ˈdeɪli ˈækʃnz/"],
+    ["Creativity helps students solve problems.","/ˌkrieɪˈtɪvəti helps ˈstuːdnts sɑːlv ˈprɑːbləmz/"],
+    ["Art expresses culture and identity.","/ɑːrt ɪkˈspresɪz ˈkʌltʃər ənd aɪˈdentəti/"],
+    ["History teaches us about our roots.","/ˈhɪstri ˈtiːtʃɪz əs əˈbaʊt ˈaʊər ruːts/"],
+    ["Climate change affects the planet.","/ˈklaɪmət tʃeɪndʒ əˈfekts ðə ˈplænɪt/"],
+    ["Physical education keeps children healthy.","/ˈfɪzɪkl ˌedʒuˈkeɪʃn kiːps ˈtʃɪldrən ˈhelθi/"],
+    ["Inclusion means everyone belongs.","/ɪnˈkluʒn miːnz ˈevriwʌn bɪˈlɔːŋz/"],
+    ["Equity ensures fair opportunities for all.","/ˈekwəti ɪnˈʃʊrz fer ˌɑːpərˈtuːnətiz fɔːr ɔːl/"],
+    ["Science drives innovation and progress.","/ˈsaɪəns draɪvz ˌɪnəˈveɪʃn ənd ˈprɑːɡres/"],
+    ["Research improves teaching methods.","/ˈriːsɜːrtʃ ɪmˈpruːvz ˈtiːtʃɪŋ ˈmeθədz/"],
+    ["Quality education changes lives.","/ˈkwɑːləti ˌedʒuˈkeɪʃn ˈtʃeɪndʒɪz laɪvz/"],
+    ["Nature deserves our respect.","/ˈneɪtʃər dɪˈzɜːrvz ˈaʊər rɪˈspekt/"],
+    ["Learning never really stops.","/ˈlɜːrnɪŋ ˈnevər ˈriːəli stɑːps/"],
+    ["Culture connects communities together.","/ˈkʌltʃər kəˈnekts kəˈmjuːnətiz təˈɡeðər/"]
+  ]
+};
+
+let state = { set: "words", mode: "flash", order: [], pos: 0, score: 0, attempts: 0, revealed: false, autoplay: true, rate: 1.0 };
+const STORAGE_KEY = "phonetics_practice_progress_v2";
+
+/* ---------- Text-to-Speech (American English only) ---------- */
+const ttsSupported = ("speechSynthesis" in window && "SpeechSynthesisUtterance" in window);
+let americanVoice = null;
+
+function pickAmericanVoice(){
+  if(!ttsSupported) return null;
+  const voices = window.speechSynthesis.getVoices() || [];
+  if(!voices.length) return null;
+  // Only pick a true en-US voice. If none exists we leave voice unset so the
+  // browser maps utter.lang="en-US" to its own best-matching system voice,
+  // instead of forcing a wrong-accent voice (e.g. en-AU) onto it.
+  let v = voices.find(x => x.lang === "en-US");
+  if(!v) v = voices.find(x => x.lang && x.lang.toLowerCase().startsWith("en-us"));
+  if(!v) v = voices.find(x => /\bus\b|american/i.test(x.name));
+  return v || null;
+}
+function refreshVoice(){ americanVoice = pickAmericanVoice(); }
+if(ttsSupported){
+  refreshVoice();
+  window.speechSynthesis.onvoiceschanged = refreshVoice;
+} else {
+  document.getElementById("audioerr").style.display = "block";
+  document.getElementById("playBtn").disabled = true;
+}
+
+function speakText(text){
+  if(!ttsSupported || !text) return;
+  try{
+    window.speechSynthesis.cancel();
+    setTimeout(()=>{
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = "en-US";
+      if(americanVoice) utter.voice = americanVoice;
+      utter.rate = state.rate;
+      const btn = document.getElementById("playBtn");
+      let resumeTimer = null;
+      utter.onstart = ()=>{
+        if(btn) btn.classList.add("speaking");
+        clearInterval(resumeTimer);
+        resumeTimer = setInterval(()=>{ try{ window.speechSynthesis.resume(); }catch(e){} }, 4000);
+      };
+      const stop = ()=>{ if(btn) btn.classList.remove("speaking"); clearInterval(resumeTimer); };
+      utter.onend = stop;
+      utter.onerror = stop;
+      window.speechSynthesis.speak(utter);
+    }, 60);
+  }catch(e){ /* ignore */ }
+}
+
+function speakCurrent(){
+  const list = currentList();
+  const idx = state.order[state.pos];
+  if(idx === undefined) return;
+  speakText(list[idx][0]);
+}
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function loadProgress(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      const p = JSON.parse(raw);
+      if(typeof p.score === "number") state.score = p.score;
+      if(typeof p.attempts === "number") state.attempts = p.attempts;
+      if(typeof p.autoplay === "boolean") state.autoplay = p.autoplay;
+      if(typeof p.rate === "number") state.rate = p.rate;
+    }
+  }catch(e){ /* ignore */ }
+}
+function saveProgress(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({score:state.score, attempts:state.attempts, autoplay:state.autoplay, rate:state.rate}));
+  }catch(e){ /* ignore */ }
+}
+
+function currentList(){ return DATA[state.set]; }
+
+function newOrder(){
+  state.order = shuffle(currentList().map((_,i)=>i));
+  state.pos = 0;
+}
+
+function render(){
+  const list = currentList();
+  const idx = state.order[state.pos];
+  const [answer, ipa] = list[idx];
+
+  document.getElementById("ipa").textContent = ipa;
+  document.getElementById("posLabel").textContent = state.pos+1;
+  document.getElementById("totalLabel").textContent = list.length;
+  document.getElementById("scoreLabel").textContent = state.score;
+  document.getElementById("attemptsLabel").textContent = state.attempts;
+  document.getElementById("progressfill").style.width = (((state.pos)/list.length)*100)+"%";
+
+  if(state.mode === "flash"){
+    document.getElementById("flashControls").style.display = "flex";
+    document.getElementById("quizControls").style.display = "none";
+    document.getElementById("answer").textContent = state.revealed ? answer : "";
+    document.getElementById("hint").textContent = state.revealed ? "" : 'Toca "Revelar" para ver la respuesta';
+  } else {
+    document.getElementById("flashControls").style.display = "none";
+    document.getElementById("quizControls").style.display = "block";
+    document.getElementById("answer").textContent = "";
+    document.getElementById("hint").textContent = "";
+    document.getElementById("quizInput").value = "";
+    document.getElementById("feedback").textContent = "";
+    document.getElementById("feedback").className = "feedback";
+    document.getElementById("quizInput").focus();
+  }
+}
+
+function normalize(s){
+  return s.trim().toLowerCase().replace(/[.,!?]+$/,"").replace(/\s+/g," ");
+}
+
+function next(){
+  state.revealed = false;
+  state.pos = (state.pos+1) % state.order.length;
+  if(state.pos === 0) state.order = shuffle(state.order);
+  render();
+  onItemChange();
+}
+function onItemChange(){ if(state.autoplay) speakCurrent(); }
+
+document.querySelectorAll(".tab").forEach(t=>{
+  t.addEventListener("click", ()=>{
+    document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+    t.classList.add("active");
+    state.set = t.dataset.set;
+    state.revealed = false;
+    newOrder(); render(); onItemChange();
+  });
+});
+
+document.querySelectorAll(".mode").forEach(m=>{
+  m.addEventListener("click", ()=>{
+    document.querySelectorAll(".mode").forEach(x=>x.classList.remove("active"));
+    m.classList.add("active");
+    state.mode = m.dataset.mode;
+    state.revealed = false;
+    render(); onItemChange();
+  });
+});
+
+document.getElementById("playBtn").addEventListener("click", speakCurrent);
+
+document.getElementById("autoplayChk").addEventListener("change", (e)=>{
+  state.autoplay = e.target.checked;
+  saveProgress();
+});
+
+document.getElementById("speedNormal").addEventListener("click", ()=>{
+  state.rate = 1.0;
+  document.getElementById("speedNormal").classList.add("active");
+  document.getElementById("speedSlow").classList.remove("active");
+  saveProgress();
+});
+document.getElementById("speedSlow").addEventListener("click", ()=>{
+  state.rate = 0.6;
+  document.getElementById("speedSlow").classList.add("active");
+  document.getElementById("speedNormal").classList.remove("active");
+  saveProgress();
+});
+
+document.getElementById("revealBtn").addEventListener("click", ()=>{
+  state.revealed = true;
+  render();
+});
+document.getElementById("nextBtn").addEventListener("click", next);
+document.getElementById("skipBtn").addEventListener("click", next);
+
+document.getElementById("checkBtn").addEventListener("click", checkAnswer);
+document.getElementById("quizInput").addEventListener("keydown", (e)=>{
+  if(e.key === "Enter") checkAnswer();
+});
+
+function checkAnswer(){
+  const list = currentList();
+  const idx = state.order[state.pos];
+  const [answer] = list[idx];
+  const given = document.getElementById("quizInput").value;
+  const fb = document.getElementById("feedback");
+
+  state.attempts++;
+  if(normalize(given) === normalize(answer)){
+    state.score++;
+    fb.textContent = "✅ ¡Correcto! " + answer;
+    fb.className = "feedback good";
+  } else {
+    fb.textContent = "❌ Era: " + answer;
+    fb.className = "feedback bad";
+  }
+  saveProgress();
+  document.getElementById("scoreLabel").textContent = state.score;
+  document.getElementById("attemptsLabel").textContent = state.attempts;
+  setTimeout(next, 1400);
+}
+
+document.getElementById("resetLink").addEventListener("click", ()=>{
+  state.score = 0;
+  state.attempts = 0;
+  saveProgress();
+  render();
+});
+
+/* ---------- Screen navigation ---------- */
+document.getElementById("startBtn").addEventListener("click", ()=>{
+  document.getElementById("homeScreen").style.display = "none";
+  document.getElementById("studyScreen").style.display = "block";
+  render();
+  onItemChange(); // fired inside this click = counts as a user gesture, unlocks audio
+});
+document.getElementById("backBtn").addEventListener("click", ()=>{
+  try{ window.speechSynthesis.cancel(); }catch(e){}
+  document.getElementById("studyScreen").style.display = "none";
+  document.getElementById("homeScreen").style.display = "flex";
+});
+
+loadProgress();
+document.getElementById("autoplayChk").checked = state.autoplay;
+if(state.rate <= 0.7){
+  document.getElementById("speedSlow").classList.add("active");
+  document.getElementById("speedNormal").classList.remove("active");
+} else {
+  document.getElementById("speedNormal").classList.add("active");
+  document.getElementById("speedSlow").classList.remove("active");
+}
+newOrder();
+</script>
+</body>
+</html>
